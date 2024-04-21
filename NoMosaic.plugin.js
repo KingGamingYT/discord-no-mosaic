@@ -22,7 +22,8 @@ const shrinkImagesCSS = document.createElement("style");
 shrinkImagesCSS.innerHTML =
 `
 .lazyImg_b510a9,
-.lazyImgContainer_b0a5df {
+.lazyImgContainer_b0a5df,
+.video__83189[style*="max-width"], .wrapper_f09ac7:not(.wrapperAudio__178e9) {
     width: auto !important;
     height: min-content !important;
 }
