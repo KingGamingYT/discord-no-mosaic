@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.0.0
+ * @version 1.0.2
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -21,24 +21,20 @@ const settings = {
 const shrinkImagesCSS = document.createElement("style");
 shrinkImagesCSS.innerHTML =
 `
-.lazyImg_b510a9,
-.lazyImgContainer_b0a5df,
-.video__83189[style*="max-width"], .wrapper_f09ac7:not(.wrapperAudio__178e9) {
-    width: auto !important;
-    height: min-content !important;
+.visualMediaItemContainer_df7417 {
+    max-width: 400px !important;
 }
-.visualMediaItemContainer__582ad {
-    max-width: 400px;
-}
+
 `;
 const borderRadiusCSS = document.createElement("style");
 borderRadiusCSS.innerHTML =
 `
-.oneByOneGridSingle__8c6ef,
+.oneByOneGridSingle_df7417,
 .imageDetailsAdded_sda9Fa .imageWrapper__178ee, /* ImageUtilities adds this */
-.visualMediaItemContainer__582ad {
+.visualMediaItemContainer_df7417 {
     border-radius: 2px !important;
 }
+
 `;
 
 module.exports = class NoMosaic {
@@ -67,7 +63,7 @@ module.exports = class NoMosaic {
             return ret;
         };
 
-        Patcher.instead('NoMosaic', Webpack.getByKeys('isGroupableMedia'), 'isGroupableMedia', () => {return false;});
+        Patcher.instead('NoMosaic', Webpack.getByKeys('Ld'), 'Ld', () => {return false;});
         Patcher.after('NoMosaic', Webpack.getAllByRegex(/renderAttachments/, {searchExports: true}).prototype, 'renderAttachments', renderAttachmentsPatch);
     }
 
@@ -95,7 +91,8 @@ module.exports = class NoMosaic {
 
     stop() {
         BdApi.Patcher.unpatchAll('NoMosaic');
-        document.body.removeChild(shrinkImagesCSS);
+        if (document.body.contains(shrinkImagesCSS))
+            document.body.removeChild(shrinkImagesCSS);
         document.body.removeChild(borderRadiusCSS);
     }
 };
