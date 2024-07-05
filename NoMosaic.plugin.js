@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.0.2
+ * @version 1.0.3
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -14,27 +14,28 @@ const { createElement, useState } = React;
 const settings = {
 	cssSizeFix: {
 		name: "Reduce attachments' sizes",
-		note: "Makes attachments 400 pixels wide max like they were originally, rather than 500 pixels",
+		note: "Makes attachments 400 pixels wide max like they were originally, rather than 550 pixels",
         default: true
 	}
 };
 const shrinkImagesCSS = document.createElement("style");
 shrinkImagesCSS.innerHTML =
 `
-.visualMediaItemContainer_df7417 {
+.visualMediaItemContainer_cda674, .imageWrapper_d4597d:has(>a) {
     max-width: 400px !important;
 }
-
+.imageWrapper_d4597d:has(>a):not(.lazyImgContainer_cda674) {
+    width: auto !important;
+}
 `;
 const borderRadiusCSS = document.createElement("style");
 borderRadiusCSS.innerHTML =
 `
-.oneByOneGridSingle_df7417,
-.imageDetailsAdded_sda9Fa .imageWrapper__178ee, /* ImageUtilities adds this */
-.visualMediaItemContainer_df7417 {
+.oneByOneGridSingle_cda674,
+.imageDetailsAdded_sda9Fa .imageWrapper_d4597d, /* ImageUtilities adds this */
+.visualMediaItemContainer_cda674 {
     border-radius: 2px !important;
 }
-
 `;
 
 module.exports = class NoMosaic {
@@ -63,7 +64,7 @@ module.exports = class NoMosaic {
             return ret;
         };
 
-        Patcher.instead('NoMosaic', Webpack.getByKeys('Ld'), 'Ld', () => {return false;});
+        Patcher.instead('NoMosaic', Webpack.getByKeys('Ld', 'OB'), 'Ld', () => {return false;});
         Patcher.after('NoMosaic', Webpack.getAllByRegex(/renderAttachments/, {searchExports: true}).prototype, 'renderAttachments', renderAttachmentsPatch);
     }
 
