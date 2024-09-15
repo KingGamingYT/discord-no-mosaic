@@ -64,7 +64,7 @@ module.exports = class NoMosaic {
             return ret;
         };
 
-        Patcher.instead('NoMosaic', Webpack.getByKeys('Ld', 'OB'), 'Ld', () => {return false;});
+        Patcher.instead('NoMosaic', Webpack.getByKeys('Ld', 'R_'), 'Ld', () => {return false;});
         Patcher.after('NoMosaic', Webpack.getAllByRegex(/renderAttachments/, {searchExports: true}).prototype, 'renderAttachments', renderAttachmentsPatch);
     }
 
