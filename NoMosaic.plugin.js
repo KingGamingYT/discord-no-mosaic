@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.0.3
+ * @version 1.0.4
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -64,7 +64,7 @@ module.exports = class NoMosaic {
             return ret;
         };
 
-        Patcher.instead('NoMosaic', Webpack.getByKeys('Ld', 'OB'), 'Ld', () => {return false;});
+        Patcher.instead('NoMosaic', Webpack.getByKeys('Ld', 'R_'), 'Ld', () => {return false;});
         Patcher.after('NoMosaic', Webpack.getAllByRegex(/renderAttachments/, {searchExports: true}).prototype, 'renderAttachments', renderAttachmentsPatch);
     }
 
