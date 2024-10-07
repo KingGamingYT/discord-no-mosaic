@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.1.0
+ * @version 1.1.1
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -91,14 +91,18 @@ metadataCSS.innerHTML =
 .metadataContent {
     flex: 1 1 auto;
     white-space: nowrap;
-    overflow: none;
+    overflow: hidden;
+}
+.metadataName, .metadataSize {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .metadataName {
     color: var(--font-primary);
     font-size: 16px;
     font-weight: 500;
     line-height: 20px;
-    overflow: ellipsis;
 }
 .metadataSize {
     font-size: 12px;
@@ -167,7 +171,7 @@ module.exports = class NoMosaic {
             metadataContainer.appendChild(fileNameElement);
             metadataContainer.appendChild(fileSizeElement);
 
-            playerInstance.parentNode.insertBefore(metadataContainer, instance.mediaRef.current.nextSibling);
+            playerInstance.parentNode.insertBefore(metadataContainer, playerInstance.nextSibling);
         });
         Patcher.instead('NoMosaic', Webpack.getByKeys('Ld', 'R_'), 'Ld', () => {return false;});
         Patcher.after('NoMosaic', Webpack.getAllByRegex(/renderAttachments/, {searchExports: true}).prototype, 'renderAttachments', renderAttachmentsPatch);
