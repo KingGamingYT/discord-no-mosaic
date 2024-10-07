@@ -1,6 +1,9 @@
 # discord-no-mosaic
-Attempts to remove the newer "Media Mosaic" media layout on Discord, replacing it with the old method of listing attachments vertically used until 2023.
-If you have any problems, please make an issue! If anyone would like to submit a PR to fix anything, feel free, as I do not know JS that well.
+A plugin for BetterDiscord which reverts various parts of the "Media Mosaic" media layout on Discord, replacing it with the old style of displaying attachments vertically <ins>& uncropped</ins> used until 2023. Includes various toggles to alter its accuracy.
+
+If you have any problems, please make an issue!
+
+<sup>PRs welcome!</sup>
 
 ###### Before
 
