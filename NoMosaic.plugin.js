@@ -2,11 +2,11 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.1.1
+ * @version 1.1.2
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
-const { Data, Webpack, React, Patcher, Net, Utils } = BdApi;
+const { Data, Webpack, React, Patcher, Utils } = BdApi;
 
 const {FormSwitch} = Webpack.getByKeys('FormSwitch')
 const { createElement, useState } = React;
@@ -142,12 +142,12 @@ module.exports = class NoMosaic {
         };
 
 
-        Patcher.after('NoMosaic', BdApi.Webpack.getModule(x=>x.ZP.minHeight).ZP.prototype,"componentDidMount", (instance,args,res) => {
+        Patcher.after('NoMosaic', Webpack.getModule(x=>x.ZP.minHeight).ZP.prototype,"componentDidMount", (instance,args,res) => {
             let fileName = instance.props.fileName; 
             let fileSize = instance.props.fileSize;
 
             const ref = Utils.findInTree(instance,x=>x?.mimeType,{walkable: ['props', 'children', '_owner', 'memoizedProps']})
-            if (!ref.mimeType?.includes('video'))
+            if (!ref?.mimeType?.includes('video'))
                 return;
 
             let playerInstance = instance.mediaRef.current;
@@ -197,7 +197,7 @@ module.exports = class NoMosaic {
 	}
 
     stop() {
-        BdApi.Patcher.unpatchAll('NoMosaic');
+        Patcher.unpatchAll('NoMosaic');
         if (document.body.contains(shrinkImagesCSS))
             document.body.removeChild(shrinkImagesCSS);
         if (document.body.contains(metadataCSS))
