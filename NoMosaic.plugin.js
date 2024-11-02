@@ -10,6 +10,11 @@ const { Data, Webpack, React, Patcher, Utils, DOM } = BdApi;
 
 const {FormSwitch} = Webpack.getByKeys('FormSwitch')
 const { createElement, useState } = React;
+const bdfdb = !window.BDFDB_Global || (!window.BDFDB_Global.loaded && !window.BDFDB_Global.started) ? null : window.BDFDB_Global.PluginUtils.buildPlugin()[1];
+if (bdfdb) {
+    bdfdb
+}
+
 
 const settings = {
 	cssSizeFix: {
@@ -35,31 +40,42 @@ const settings = {
         }
     }
 };
-const shrinkImagesCSS = 
+
+let wrapperControlsHidden = structuredClone(BdApi.Webpack.getByKeys("wrapperControlsHidden"));
+Object.keys(wrapperControlsHidden).forEach(function(key, index) {
+    wrapperControlsHidden[key] = wrapperControlsHidden[key].replace(/ wrapper_[a-f0-9]{6}/,"");
+});
+const styles = Object.assign(
+    BdApi.Webpack.getByKeys("visualMediaItemContainer"),
+    BdApi.Webpack.getByKeys("imageZoom"),
+    BdApi.Webpack.getByKeys("hoverButtonGroup"),
+    wrapperControlsHidden
+);
+const shrinkImagesCSS = webpackify(
 `
-.visualMediaItemContainer_cda674, .imageWrapper_d4597d:has(>a) {
+.visualMediaItemContainer, .imageWrapper:has(>a) {
     max-width: 400px !important;
 }
-.imageWrapper_d4597d:has(>a):not(.lazyImgContainer_cda674) {
+.imageWrapper:has(>a):not(.lazyImgContainer) {
     width: auto !important;
 }
-`;
+`);
 
-const borderRadiusCSS = 
+const borderRadiusCSS = webpackify(
 `
-.oneByOneGridSingle_cda674,
-.imageDetailsAdded_sda9Fa .imageWrapper_d4597d, /* ImageUtilities adds this */
-.visualMediaItemContainer_cda674 {
+.oneByOneGridSingle,
+.imageDetailsAdded_sda9Fa .imageWrapper, /*bdfdb ? bdfdb.dotCNS._imageutilitiesimagedetailsadded + ".imageWrapper," : ""*/
+.visualMediaItemContainer {
     border-radius: 2px !important;
 }
-`;
+`);
 
-const metadataCSS = 
+const metadataCSS = webpackify(
 `
-:has(>*>*>.wrapperControlsHidden_f72aac>.metadata)>.hoverButtonGroup_d0395d {
+:has(>*>*>.wrapperControlsHidden>.nm-Metadata)>.hoverButtonGroup {
     transform: translateY(-250%);
 }
-:has(>*>*>*>.metadata)>.hoverButtonGroup_d0395d {
+:has(>*>*>*>.nm-Metadata)>.hoverButtonGroup {
     opacity: 1;
     background-color: transparent !important;
     transition: transform 0.2s cubic-bezier(0.000, 0.665, 0.310, 1.145);
@@ -67,16 +83,16 @@ const metadataCSS =
         transform: none;
     }
 }
-:has(+.hoverButtonGroup_d0395d:hover)>*>*>.metadata {
+:has(+.hoverButtonGroup:hover)>*>*>.nm-Metadata {
     transform: none;
 }
-:has(+.hoverButtonGroup_d0395d:hover)>*>*>.videoControls_f72aac {
+:has(+.hoverButtonGroup:hover)>*>*>.videoControls {
     transform: none !important;
 }
-.wrapperControlsHidden_f72aac > .metadata {
+.wrapperControlsHidden > .nm-Metadata {
     transform: translateY(-100%);
 }
-.metadata {
+.nm-Metadata {
     position: absolute;
     top: -10px;
     right: 0px;
@@ -87,31 +103,36 @@ const metadataCSS =
     height: 80px;
     transition: transform 0.2s cubic-bezier(0.000, 0.665, 0.310, 1.145);
 }
-.metadataContent {
+.nm-MetadataContent {
     flex: 1 1 auto;
     white-space: nowrap;
     overflow: hidden;
 }
-.metadataName, .metadataSize {
+.nm-MetadataName, .nm-MetadataSize {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
-.metadataName {
-    color: var(--font-primary);
+.nm-MetadataName {
     font-size: 16px;
     font-weight: 500;
     line-height: 20px;
 }
-.metadataSize {
+.nm-MetadataSize {
     font-size: 12px;
     font-weight: 400;
     margin-top: 1px;
     line-height: 16px;
     opacity: 0.7;
 }
-`;
-
+`);
+function webpackify(css) {
+    for (const key in styles) {
+        let regex = new RegExp(String.raw`\.${key}( |\.|,|>|:)`, 'g');
+        css = css.replace(regex, `.${styles[key]}$1`);
+    }
+    return css;
+} 
 module.exports = class NoMosaic {
     constructor(meta) {
 
@@ -153,11 +174,11 @@ module.exports = class NoMosaic {
             if (playerInstance.parentNode.querySelector(".metadata"))
                 return;
 
-            let metadataContainer = DOM.createElement("div", { className: "metadata" });
+            let metadataContainer = DOM.createElement("div", { className: "nm-Metadata" });
 
-            let detailsContainer = DOM.createElement("div", { className: "metadataContent" });
-            let fileNameElement = DOM.createElement("h2", { className: "metadataName" }, fileName);
-            let fileSizeElement = DOM.createElement("p", { className: "metadataSize" }, fileSize);
+            let detailsContainer = DOM.createElement("div", { className: "nm-MetadataContent" });
+            let fileNameElement = DOM.createElement("h2", { className: "nm-MetadataName" }, fileName);
+            let fileSizeElement = DOM.createElement("p", { className: "nm-MetadataSize" }, fileSize);
 
             metadataContainer.append(detailsContainer, fileNameElement, fileSizeElement);
 
