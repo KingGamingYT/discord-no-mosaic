@@ -2,11 +2,11 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.1.2
+ * @version 1.1.3
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
-const { Data, Webpack, React, Patcher, Utils } = BdApi;
+const { Data, Webpack, React, Patcher, Utils, DOM } = BdApi;
 
 const {FormSwitch} = Webpack.getByKeys('FormSwitch')
 const { createElement, useState } = React;
@@ -18,9 +18,9 @@ const settings = {
         default: true,
         changed: (v) => {
             if (v)
-                document.body.appendChild(shrinkImagesCSS);
+                DOM.addStyle(`shrinkImagesCSS`, shrinkImagesCSS);
             else
-                document.body.removeChild(shrinkImagesCSS);
+                DOM.removeStyle(`shrinkImagesCSS`, shrinkImagesCSS);
         }
 	},
     videoMetadata: {
@@ -29,14 +29,13 @@ const settings = {
         default: true,
         changed: (v) => {
             if (v)
-                document.body.appendChild(metadataCSS);
+                DOM.addStyle(`metadataCSS`, metadataCSS);
             else
-                document.body.removeChild(metadataCSS);
+                DOM.removeStyle(`metadataCSS`, metadataCSS);
         }
     }
 };
-const shrinkImagesCSS = document.createElement("style");
-shrinkImagesCSS.innerHTML =
+const shrinkImagesCSS = 
 `
 .visualMediaItemContainer_cda674, .imageWrapper_d4597d:has(>a) {
     max-width: 400px !important;
@@ -45,8 +44,8 @@ shrinkImagesCSS.innerHTML =
     width: auto !important;
 }
 `;
-const borderRadiusCSS = document.createElement("style");
-borderRadiusCSS.innerHTML =
+
+const borderRadiusCSS = 
 `
 .oneByOneGridSingle_cda674,
 .imageDetailsAdded_sda9Fa .imageWrapper_d4597d, /* ImageUtilities adds this */
@@ -54,8 +53,8 @@ borderRadiusCSS.innerHTML =
     border-radius: 2px !important;
 }
 `;
-const metadataCSS = document.createElement("style");
-metadataCSS.innerHTML =
+
+const metadataCSS = 
 `
 :has(>*>*>.wrapperControlsHidden_f72aac>.metadata)>.hoverButtonGroup_d0395d {
     transform: translateY(-250%);
@@ -123,11 +122,11 @@ module.exports = class NoMosaic {
                 Data.save('NoMosaic', key, settings[key].default);
         }
 
-        document.body.appendChild(borderRadiusCSS);
+        DOM.addStyle('borderRadiusCSS', borderRadiusCSS);
         if (Data.load('NoMosaic', 'cssSizeFix'))
-            document.body.appendChild(shrinkImagesCSS);
+            DOM.addStyle('shrinkImagesCSS', shrinkImagesCSS);
         if (Data.load('NoMosaic', 'videoMetadata'))
-            document.body.appendChild(metadataCSS);
+            DOM.addStyle('metadataCSS', metadataCSS);
 
         const renderAttachmentsPatch = (self, args, ret) => {
             if (!ret || !ret.props || !ret.props.items)
@@ -154,22 +153,13 @@ module.exports = class NoMosaic {
             if (playerInstance.parentNode.querySelector(".metadata"))
                 return;
 
-            let metadataContainer = document.createElement("div");
-            let detailsContainer = document.createElement("div");
-            let fileNameElement = document.createElement("h2");
-            let fileSizeElement = document.createElement("p");
+            let metadataContainer = DOM.createElement("div", { className: "metadata" });
 
-            metadataContainer.className = "metadata";
-            detailsContainer.className = "metadataContent";
-            fileNameElement.className = "metadataName";
-            fileSizeElement.className = "metadataSize";
+            let detailsContainer = DOM.createElement("div", { className: "metadataContent" });
+            let fileNameElement = DOM.createElement("h2", { className: "metadataName" }, fileName);
+            let fileSizeElement = DOM.createElement("p", { className: "metadataSize" }, fileSize);
 
-            fileNameElement.textContent = fileName;
-            fileSizeElement.textContent = fileSize;
-
-            metadataContainer.appendChild(detailsContainer)
-            metadataContainer.appendChild(fileNameElement);
-            metadataContainer.appendChild(fileSizeElement);
+            metadataContainer.append(detailsContainer, fileNameElement, fileSizeElement);
 
             playerInstance.parentNode.insertBefore(metadataContainer, playerInstance.nextSibling);
         });
@@ -198,10 +188,8 @@ module.exports = class NoMosaic {
 
     stop() {
         Patcher.unpatchAll('NoMosaic');
-        if (document.body.contains(shrinkImagesCSS))
-            document.body.removeChild(shrinkImagesCSS);
-        if (document.body.contains(metadataCSS))
-            document.body.removeChild(metadataCSS);
-        document.body.removeChild(borderRadiusCSS);
+        DOM.removeStyle('shrinkImagesCSS', shrinkImagesCSS);
+        DOM.removeStyle('metadataCSS', metadataCSS);
+        DOM.removeStyle('borderRadiusCSS', borderRadiusCSS);
     }
 };
