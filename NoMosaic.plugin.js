@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.1.3
+ * @version 1.1.4
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -10,10 +10,7 @@ const { Data, Webpack, React, Patcher, Utils, DOM } = BdApi;
 
 const {FormSwitch} = Webpack.getByKeys('FormSwitch')
 const { createElement, useState } = React;
-const bdfdb = !window.BDFDB_Global || (!window.BDFDB_Global.loaded && !window.BDFDB_Global.started) ? null : window.BDFDB_Global.PluginUtils.buildPlugin()[1];
-if (bdfdb) {
-    bdfdb
-}
+/* const bdfdb = !window.BDFDB_Global || (!window.BDFDB_Global.loaded && !window.BDFDB_Global.started) ? null : window.BDFDB_Global.PluginUtils.buildPlugin()[1]; */
 
 
 const settings = {
