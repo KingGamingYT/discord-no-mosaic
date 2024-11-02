@@ -2,11 +2,11 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.0.3
+ * @version 1.1.3
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
-const { Data, Webpack, React, Patcher } = BdApi;
+const { Data, Webpack, React, Patcher, Utils, DOM } = BdApi;
 
 const {FormSwitch} = Webpack.getByKeys('FormSwitch')
 const { createElement, useState } = React;
@@ -15,11 +15,27 @@ const settings = {
 	cssSizeFix: {
 		name: "Reduce attachments' sizes",
 		note: "Makes attachments 400 pixels wide max like they were originally, rather than 550 pixels",
-        default: true
-	}
+        default: true,
+        changed: (v) => {
+            if (v)
+                DOM.addStyle(`shrinkImagesCSS`, shrinkImagesCSS);
+            else
+                DOM.removeStyle(`shrinkImagesCSS`, shrinkImagesCSS);
+        }
+	},
+    videoMetadata: {
+        name: "Restores video metadata",
+        note: "Adds the name and file size back to the top left-hand corner of the video embed like they were originally",
+        default: true,
+        changed: (v) => {
+            if (v)
+                DOM.addStyle(`metadataCSS`, metadataCSS);
+            else
+                DOM.removeStyle(`metadataCSS`, metadataCSS);
+        }
+    }
 };
-const shrinkImagesCSS = document.createElement("style");
-shrinkImagesCSS.innerHTML =
+const shrinkImagesCSS = 
 `
 .visualMediaItemContainer_cda674, .imageWrapper_d4597d:has(>a) {
     max-width: 400px !important;
@@ -28,13 +44,71 @@ shrinkImagesCSS.innerHTML =
     width: auto !important;
 }
 `;
-const borderRadiusCSS = document.createElement("style");
-borderRadiusCSS.innerHTML =
+
+const borderRadiusCSS = 
 `
 .oneByOneGridSingle_cda674,
 .imageDetailsAdded_sda9Fa .imageWrapper_d4597d, /* ImageUtilities adds this */
 .visualMediaItemContainer_cda674 {
     border-radius: 2px !important;
+}
+`;
+
+const metadataCSS = 
+`
+:has(>*>*>.wrapperControlsHidden_f72aac>.metadata)>.hoverButtonGroup_d0395d {
+    transform: translateY(-250%);
+}
+:has(>*>*>*>.metadata)>.hoverButtonGroup_d0395d {
+    opacity: 1;
+    background-color: transparent !important;
+    transition: transform 0.2s cubic-bezier(0.000, 0.665, 0.310, 1.145);
+    &:hover {
+        transform: none;
+    }
+}
+:has(+.hoverButtonGroup_d0395d:hover)>*>*>.metadata {
+    transform: none;
+}
+:has(+.hoverButtonGroup_d0395d:hover)>*>*>.videoControls_f72aac {
+    transform: none !important;
+}
+.wrapperControlsHidden_f72aac > .metadata {
+    transform: translateY(-100%);
+}
+.metadata {
+    position: absolute;
+    top: -10px;
+    right: 0px;
+    left: 0px;
+    background-image: linear-gradient(0deg, transparent, rgba(0, 0, 0, 0.9));
+    box-sizing: border-box;
+    padding: 22px 12px 12px;
+    height: 80px;
+    transition: transform 0.2s cubic-bezier(0.000, 0.665, 0.310, 1.145);
+}
+.metadataContent {
+    flex: 1 1 auto;
+    white-space: nowrap;
+    overflow: hidden;
+}
+.metadataName, .metadataSize {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.metadataName {
+    color: var(--font-primary);
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 20px;
+}
+.metadataSize {
+    font-size: 12px;
+    font-weight: 400;
+    margin-top: 1px;
+    line-height: 16px;
+    opacity: 0.7;
 }
 `;
 
@@ -48,9 +122,11 @@ module.exports = class NoMosaic {
                 Data.save('NoMosaic', key, settings[key].default);
         }
 
-        document.body.appendChild(borderRadiusCSS);
+        DOM.addStyle('borderRadiusCSS', borderRadiusCSS);
         if (Data.load('NoMosaic', 'cssSizeFix'))
-            document.body.appendChild(shrinkImagesCSS);
+            DOM.addStyle('shrinkImagesCSS', shrinkImagesCSS);
+        if (Data.load('NoMosaic', 'videoMetadata'))
+            DOM.addStyle('metadataCSS', metadataCSS);
 
         const renderAttachmentsPatch = (self, args, ret) => {
             if (!ret || !ret.props || !ret.props.items)
@@ -64,6 +140,29 @@ module.exports = class NoMosaic {
             return ret;
         };
 
+
+        Patcher.after('NoMosaic', Webpack.getModule(x=>x.ZP.minHeight).ZP.prototype,"componentDidMount", (instance,args,res) => {
+            let fileName = instance.props.fileName; 
+            let fileSize = instance.props.fileSize;
+
+            const ref = Utils.findInTree(instance,x=>x?.mimeType,{walkable: ['props', 'children', '_owner', 'memoizedProps']})
+            if (!ref?.mimeType?.includes('video'))
+                return;
+
+            let playerInstance = instance.mediaRef.current;
+            if (playerInstance.parentNode.querySelector(".metadata"))
+                return;
+
+            let metadataContainer = DOM.createElement("div", { className: "metadata" });
+
+            let detailsContainer = DOM.createElement("div", { className: "metadataContent" });
+            let fileNameElement = DOM.createElement("h2", { className: "metadataName" }, fileName);
+            let fileSizeElement = DOM.createElement("p", { className: "metadataSize" }, fileSize);
+
+            metadataContainer.append(detailsContainer, fileNameElement, fileSizeElement);
+
+            playerInstance.parentNode.insertBefore(metadataContainer, playerInstance.nextSibling);
+        });
         Patcher.instead('NoMosaic', Webpack.getByKeys('Ld', 'R_'), 'Ld', () => {return false;});
         Patcher.after('NoMosaic', Webpack.getAllByRegex(/renderAttachments/, {searchExports: true}).prototype, 'renderAttachments', renderAttachmentsPatch);
     }
@@ -71,7 +170,7 @@ module.exports = class NoMosaic {
     getSettingsPanel() {
         return createElement(() => Object.keys(settings).map((key) => {
 	        const [state, setState] = useState(Data.load('NoMosaic', key));
-	        const { name, note } = settings[key];
+	        const { name, note, changed } = settings[key];
 
             return createElement(FormSwitch, {
 	        	children: name,
@@ -80,20 +179,17 @@ module.exports = class NoMosaic {
 	        	onChange: (v) => {
 	        		Data.save('NoMosaic', key, v);
 	        		setState(v);
-
-                    if (v)
-                        document.body.appendChild(shrinkImagesCSS);
-                    else
-                        document.body.removeChild(shrinkImagesCSS);
+                    if (changed)
+                        changed(v);
 	        	}
 	        });
         }));
 	}
 
     stop() {
-        BdApi.Patcher.unpatchAll('NoMosaic');
-        if (document.body.contains(shrinkImagesCSS))
-            document.body.removeChild(shrinkImagesCSS);
-        document.body.removeChild(borderRadiusCSS);
+        Patcher.unpatchAll('NoMosaic');
+        DOM.removeStyle('shrinkImagesCSS', shrinkImagesCSS);
+        DOM.removeStyle('metadataCSS', metadataCSS);
+        DOM.removeStyle('borderRadiusCSS', borderRadiusCSS);
     }
 };
