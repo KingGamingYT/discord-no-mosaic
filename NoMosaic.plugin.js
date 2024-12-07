@@ -144,20 +144,26 @@ function webpackify(css) {
 module.exports = class NoMosaic {
     constructor(meta) {
         this.meta = meta;
+        
+        const pastVersion = Data.load('NoMosaic', "version");
+        this.shouldDisplayChangelog = typeof pastVersion === "string" ? pastVersion !== this.meta.version : true;
+        Data.save('NoMosaic', "version", this.meta.version);
     }
     start() {
-        const SCM = UI.showChangelogModal({
-            title: this.meta.name + " Changelog",
-            subtitle: this.meta.version,
-            changes: changelog.changelog,
-            footer: createElement(Button, {
-                onClick: () => {
-                    closeModal(SCM);
-                },
-                children: "Okay"
-            })
-        });
-
+        if (this.shouldDisplayChangelog) {
+                const SCM = UI.showChangelogModal({
+                title: this.meta.name + " Changelog",
+                subtitle: this.meta.version,
+                changes: changelog.changelog,
+                footer: createElement(Button, {
+                    onClick: () => {
+                        closeModal(SCM);
+                    },
+                    children: "Okay",
+                    style: { marginLeft: "auto" }
+                })
+            });
+        }
         for (let key in settings) {
             if (Data.load('NoMosaic', key) === undefined)
                 Data.save('NoMosaic', key, settings[key].default);
