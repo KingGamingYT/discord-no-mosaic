@@ -2,13 +2,13 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.1.4
+ * @version 1.1.5
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
-const { Data, Webpack, React, Patcher, Utils, DOM } = BdApi;
+const { Data, Webpack, React, Patcher, Utils, DOM, UI } = BdApi;
 
-const {FormSwitch} = Webpack.getByKeys('FormSwitch')
+const {FormSwitch, Button, closeModal} = Webpack.getByKeys('FormSwitch')
 const { createElement, useState } = React;
 /* const bdfdb = !window.BDFDB_Global || (!window.BDFDB_Global.loaded && !window.BDFDB_Global.started) ? null : window.BDFDB_Global.PluginUtils.buildPlugin()[1]; */
 
@@ -35,7 +35,18 @@ const settings = {
             else
                 DOM.removeStyle(`metadataCSS`, metadataCSS);
         }
-    }
+    },
+};
+const changelog = {
+    changelog: [
+        {
+            "title": "A wild changelog appeared!",
+            "type": "added",
+            "items": [
+                "Added a changelog."
+            ]
+        }
+    ]
 };
 
 let wrapperControlsHidden = structuredClone(BdApi.Webpack.getByKeys("wrapperControlsHidden"));
@@ -132,9 +143,21 @@ function webpackify(css) {
 } 
 module.exports = class NoMosaic {
     constructor(meta) {
-
+        this.meta = meta;
     }
     start() {
+        const SCM = UI.showChangelogModal({
+            title: this.meta.name + " Changelog",
+            subtitle: this.meta.version,
+            changes: changelog.changelog,
+            footer: createElement(Button, {
+                onClick: () => {
+                    closeModal(SCM);
+                },
+                children: "Okay"
+            })
+        });
+
         for (let key in settings) {
             if (Data.load('NoMosaic', key) === undefined)
                 Data.save('NoMosaic', key, settings[key].default);
