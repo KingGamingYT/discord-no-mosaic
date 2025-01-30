@@ -2,16 +2,17 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.1.4
+ * @version 1.1.5
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
-const { Data, Webpack, React, Patcher, Utils, DOM } = BdApi;
+const { Data, Webpack, React, Patcher, Utils, DOM, UI } = BdApi;
 
-const {FormSwitch} = Webpack.getByKeys('FormSwitch')
 const { createElement, useState } = React;
-/* const bdfdb = !window.BDFDB_Global || (!window.BDFDB_Global.loaded && !window.BDFDB_Global.started) ? null : window.BDFDB_Global.PluginUtils.buildPlugin()[1]; */
-
+const { Button, closeModal } = Webpack.getMangled(/ConfirmModal:\(\)=>.{1,3}.ConfirmModal/, 
+    { Button: x=>x.toString?.().includes('submittingFinishedLabel'), 
+    closeModal: Webpack.Filters.byStrings(".setState", ".getState()[")});
+const FormSwitch = Webpack.getByStrings('ERROR','tooltipNote', { searchExports: true });
 
 const settings = {
 	cssSizeFix: {
@@ -35,7 +36,33 @@ const settings = {
             else
                 DOM.removeStyle(`metadataCSS`, metadataCSS);
         }
-    }
+    },
+};
+const changelog = {
+    changelog: [
+        {
+            "title": "A wild changelog appeared!",
+            "type": "added",
+            "items": [
+                "Added a changelog."
+            ]
+        },
+        {
+            "title": "Improvements",
+            "type" : "improved",
+            "items": [
+                "Changed how the primary media patch is fetched to be more reliable.",
+                "Fixed the settings menu."
+            ]
+        },
+        {
+            "title": "Stuff taken out",
+            "type": "fixed",
+            "items": [
+                "Removed references to BDFDB from the code."
+            ]
+        }
+    ]
 };
 
 let wrapperControlsHidden = structuredClone(BdApi.Webpack.getByKeys("wrapperControlsHidden"));
@@ -61,7 +88,7 @@ const shrinkImagesCSS = webpackify(
 const borderRadiusCSS = webpackify(
 `
 .oneByOneGridSingle,
-.imageDetailsAdded_sda9Fa .imageWrapper, /*bdfdb ? bdfdb.dotCNS._imageutilitiesimagedetailsadded + ".imageWrapper," : ""*/
+.imageDetailsAdded_sda9Fa .imageWrapper,
 .visualMediaItemContainer {
     border-radius: 2px !important;
 }
@@ -132,9 +159,27 @@ function webpackify(css) {
 } 
 module.exports = class NoMosaic {
     constructor(meta) {
-
+        this.meta = meta;
+        
+        const pastVersion = Data.load('NoMosaic', "version");
+        this.shouldDisplayChangelog = typeof pastVersion === "string" ? pastVersion !== this.meta.version : true;
+        Data.save('NoMosaic', "version", this.meta.version);
     }
     start() {
+        if (this.shouldDisplayChangelog) {
+                const SCM = UI.showChangelogModal({
+                title: this.meta.name + " Changelog",
+                subtitle: this.meta.version,
+                changes: changelog.changelog,
+                footer: createElement(Button, {
+                    onClick: () => {
+                        closeModal(SCM);
+                    },
+                    children: "Okay",
+                    style: { marginLeft: "auto" }
+                })
+            });
+        }
         for (let key in settings) {
             if (Data.load('NoMosaic', key) === undefined)
                 Data.save('NoMosaic', key, settings[key].default);
@@ -181,7 +226,7 @@ module.exports = class NoMosaic {
 
             playerInstance.parentNode.insertBefore(metadataContainer, playerInstance.nextSibling);
         });
-        Patcher.instead('NoMosaic', Webpack.getByKeys('Ld', 'R_'), 'Ld', () => {return false;});
+        Patcher.instead('NoMosaic', Webpack.getMangled("VISUAL_PLACEHOLDER", {isGroupableMedia: x=>x.toString?.().includes('==')}), "isGroupableMedia", () => {return false;});
         Patcher.after('NoMosaic', Webpack.getAllByRegex(/renderAttachments/, {searchExports: true}).prototype, 'renderAttachments', renderAttachmentsPatch);
     }
 
