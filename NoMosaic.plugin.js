@@ -8,10 +8,11 @@
 
 const { Data, Webpack, React, Patcher, Utils, DOM, UI } = BdApi;
 
-const {FormSwitch, Button, closeModal} = Webpack.getByKeys('FormSwitch')
 const { createElement, useState } = React;
-/* const bdfdb = !window.BDFDB_Global || (!window.BDFDB_Global.loaded && !window.BDFDB_Global.started) ? null : window.BDFDB_Global.PluginUtils.buildPlugin()[1]; */
-
+const { Button, closeModal } = Webpack.getMangled(/ConfirmModal:\(\)=>.{1,3}.ConfirmModal/, 
+    { Button: x=>x.toString?.().includes('submittingFinishedLabel'), 
+    closeModal: Webpack.Filters.byStrings(".setState", ".getState()[")});
+const FormSwitch = Webpack.getByStrings('ERROR','tooltipNote', { searchExports: true });
 
 const settings = {
 	cssSizeFix: {
@@ -45,6 +46,21 @@ const changelog = {
             "items": [
                 "Added a changelog."
             ]
+        },
+        {
+            "title": "Improvements",
+            "type" : "improved",
+            "items": [
+                "Changed how the primary media patch is fetched to be more reliable.",
+                "Fixed the settings menu."
+            ]
+        },
+        {
+            "title": "Stuff taken out",
+            "type": "fixed",
+            "items": [
+                "Removed references to BDFDB from the code."
+            ]
         }
     ]
 };
@@ -72,7 +88,7 @@ const shrinkImagesCSS = webpackify(
 const borderRadiusCSS = webpackify(
 `
 .oneByOneGridSingle,
-.imageDetailsAdded_sda9Fa .imageWrapper, /*bdfdb ? bdfdb.dotCNS._imageutilitiesimagedetailsadded + ".imageWrapper," : ""*/
+.imageDetailsAdded_sda9Fa .imageWrapper,
 .visualMediaItemContainer {
     border-radius: 2px !important;
 }
@@ -210,7 +226,7 @@ module.exports = class NoMosaic {
 
             playerInstance.parentNode.insertBefore(metadataContainer, playerInstance.nextSibling);
         });
-        Patcher.instead('NoMosaic', Webpack.getByKeys('Ld', 'R_'), 'Ld', () => {return false;});
+        Patcher.instead('NoMosaic', Webpack.getMangled("VISUAL_PLACEHOLDER", {isGroupableMedia: x=>x.toString?.().includes('==')}), "isGroupableMedia", () => {return false;});
         Patcher.after('NoMosaic', Webpack.getAllByRegex(/renderAttachments/, {searchExports: true}).prototype, 'renderAttachments', renderAttachmentsPatch);
     }
 
