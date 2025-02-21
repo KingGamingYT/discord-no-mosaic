@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.1.5
+ * @version 1.1.6
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -41,25 +41,10 @@ const settings = {
 const changelog = {
     changelog: [
         {
-            "title": "A wild changelog appeared!",
-            "type": "added",
-            "items": [
-                "Added a changelog."
-            ]
-        },
-        {
             "title": "Improvements",
             "type" : "improved",
             "items": [
-                "Changed how the primary media patch is fetched to be more reliable.",
-                "Fixed the settings menu."
-            ]
-        },
-        {
-            "title": "Stuff taken out",
-            "type": "fixed",
-            "items": [
-                "Removed references to BDFDB from the code."
+                "Fixed a long-standing bug where certain images would be cut off vertically at certain window resolutions due to a class bug.",
             ]
         }
     ]
@@ -77,10 +62,10 @@ const styles = Object.assign(
 );
 const shrinkImagesCSS = webpackify(
 `
-.visualMediaItemContainer, .imageWrapper:has(>a) {
+.visualMediaItemContainer {
     max-width: 400px !important;
 }
-.imageWrapper:has(>a):not(.lazyImgContainer) {
+.imageWrapper:has(>a):not(.lazyImgContainer ) {
     width: auto !important;
 }
 `);
