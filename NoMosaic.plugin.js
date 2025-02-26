@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.1.6
+ * @version 1.1.7
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -44,7 +44,7 @@ const changelog = {
             "title": "Improvements",
             "type" : "improved",
             "items": [
-                "Fixed a long-standing bug where certain images would be cut off vertically at certain window resolutions due to a class bug.",
+                "Updated a function for futureproofing.\nThanks to doggybootsy for help!"
             ]
         }
     ]
@@ -65,7 +65,7 @@ const shrinkImagesCSS = webpackify(
 .visualMediaItemContainer {
     max-width: 400px !important;
 }
-.imageWrapper:has(>a):not(.lazyImgContainer ) {
+.imageWrapper:has(>a):not(.lazyImgContainer) {
     width: auto !important;
 }
 `);
@@ -137,7 +137,7 @@ const metadataCSS = webpackify(
 `);
 function webpackify(css) {
     for (const key in styles) {
-        let regex = new RegExp(String.raw`\.${key}( |\.|,|>|:)`, 'g');
+        let regex = new RegExp(`\\.${key}([\\s,.):>])`, 'g');
         css = css.replace(regex, `.${styles[key]}$1`);
     }
     return css;
