@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.1.7
+ * @version 1.1.8
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -44,7 +44,7 @@ const changelog = {
             "title": "Improvements",
             "type" : "improved",
             "items": [
-                "Updated a function for futureproofing.\nThanks to doggybootsy for help!"
+                "Updated a function for futureproofing.\n\nAgain."
             ]
         }
     ]
@@ -212,7 +212,7 @@ module.exports = class NoMosaic {
             playerInstance.parentNode.insertBefore(metadataContainer, playerInstance.nextSibling);
         });
         Patcher.instead('NoMosaic', Webpack.getMangled("VISUAL_PLACEHOLDER", {isGroupableMedia: x=>x.toString?.().includes('==')}), "isGroupableMedia", () => {return false;});
-        Patcher.after('NoMosaic', Webpack.getAllByRegex(/renderAttachments/, {searchExports: true}).prototype, 'renderAttachments', renderAttachmentsPatch);
+        Patcher.after('NoMosaic', Webpack.getModule(x=>x?.prototype?.renderAttachments,{searchExports:true}).prototype, 'renderAttachments', renderAttachmentsPatch);
     }
 
     getSettingsPanel() {
