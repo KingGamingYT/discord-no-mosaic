@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.1.8
+ * @version 1.1.9
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -44,7 +44,7 @@ const changelog = {
             "title": "Improvements",
             "type" : "improved",
             "items": [
-                "Updated a function for futureproofing.\n\nAgain."
+                "Modified style assigning to not pollute modules"
             ]
         }
     ]
@@ -54,7 +54,7 @@ let wrapperControlsHidden = structuredClone(BdApi.Webpack.getByKeys("wrapperCont
 Object.keys(wrapperControlsHidden).forEach(function(key, index) {
     wrapperControlsHidden[key] = wrapperControlsHidden[key].replace(/ wrapper_[a-f0-9]{6}/,"");
 });
-const styles = Object.assign(
+const styles = Object.assign({},
     BdApi.Webpack.getByKeys("visualMediaItemContainer"),
     BdApi.Webpack.getByKeys("imageZoom"),
     BdApi.Webpack.getByKeys("hoverButtonGroup"),
@@ -212,7 +212,7 @@ module.exports = class NoMosaic {
             playerInstance.parentNode.insertBefore(metadataContainer, playerInstance.nextSibling);
         });
         Patcher.instead('NoMosaic', Webpack.getMangled("VISUAL_PLACEHOLDER", {isGroupableMedia: x=>x.toString?.().includes('==')}), "isGroupableMedia", () => {return false;});
-        Patcher.after('NoMosaic', Webpack.getModule(x=>x?.prototype?.renderAttachments,{searchExports:true}).prototype, 'renderAttachments', renderAttachmentsPatch);
+        Patcher.after('NoMosaic', Webpack.getModule(x=>x?.prototype?.renderAttachments,{searchExports: true}).prototype, 'renderAttachments', renderAttachmentsPatch);
     }
 
     getSettingsPanel() {
