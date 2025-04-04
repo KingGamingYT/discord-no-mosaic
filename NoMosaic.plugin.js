@@ -41,10 +41,10 @@ const settings = {
 const changelog = {
     changelog: [
         {
-            "title": "Improvements",
+            "title": "Changes",
             "type" : "improved",
             "items": [
-                "Modified style assigning to not pollute modules"
+                "Removed a class reference because it broke CSS"
             ]
         }
     ]
@@ -65,7 +65,7 @@ const shrinkImagesCSS = webpackify(
 .visualMediaItemContainer {
     max-width: 400px !important;
 }
-.imageWrapper:has(>a):not(.lazyImgContainer) {
+.imageWrapper:has(>a) {
     width: auto !important;
 }
 `);
