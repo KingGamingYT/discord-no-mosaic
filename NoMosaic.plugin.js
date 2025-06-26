@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.1.9
+ * @version 1.2.0
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -44,7 +44,7 @@ const changelog = {
             "title": "Changes",
             "type" : "improved",
             "items": [
-                "Removed a class reference because it broke CSS"
+                "Unhooked maximum height for single images."
             ]
         }
     ]
@@ -67,6 +67,9 @@ const shrinkImagesCSS = webpackify(
 }
 .imageWrapper:has(>a) {
     width: auto !important;
+}
+.oneByOneGrid {
+    max-height: unset !important;
 }
 `);
 
