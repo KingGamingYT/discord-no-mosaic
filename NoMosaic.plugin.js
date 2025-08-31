@@ -2,16 +2,16 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.2.0
+ * @version 1.2.1
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
 const { Data, Webpack, React, Patcher, Utils, DOM, UI } = BdApi;
 
 const { createElement, useState } = React;
-const { Button, closeModal } = Webpack.getMangled(/ConfirmModal:\(\)=>.{1,3}.ConfirmModal/, 
-    { Button: x=>x.toString?.().includes('submittingFinishedLabel'), 
-    closeModal: Webpack.Filters.byStrings(".setState", ".getState()[")});
+const { closeModal } = Webpack.getMangled(/ConfirmModal:\(\)=>.{1,3}.ConfirmModal/, 
+    { closeModal: Webpack.Filters.byStrings(".setState", ".getState()[")});
+const Button = Webpack.getModule(m => typeof m === "function" && typeof m.Link === "function", { searchExports: true });
 const FormSwitch = Webpack.getByStrings('ERROR','tooltipNote', { searchExports: true });
 
 const settings = {
@@ -44,7 +44,7 @@ const changelog = {
             "title": "Changes",
             "type" : "improved",
             "items": [
-                "Unhooked maximum height for single images."
+                `Tweaked CSS to not break video sizes when using the "Reduce attachments' sizes" option.`
             ]
         }
     ]
@@ -64,9 +64,13 @@ const shrinkImagesCSS = webpackify(
 `
 .visualMediaItemContainer {
     max-width: 400px !important;
+    width: auto;
 }
 .imageWrapper:has(>a) {
     width: auto !important;
+}
+.imageWrapper {
+    max-width: fit-content;
 }
 .oneByOneGrid {
     max-height: unset !important;
