@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.2.1
+ * @version 1.2.2
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -12,7 +12,7 @@ const { createElement, useState } = React;
 const { closeModal } = Webpack.getMangled(/ConfirmModal:\(\)=>.{1,3}.ConfirmModal/, 
     { closeModal: Webpack.Filters.byStrings(".setState", ".getState()[")});
 const Button = Webpack.getModule(m => typeof m === "function" && typeof m.Link === "function", { searchExports: true });
-const FormSwitch = Webpack.getByStrings('ERROR','tooltipNote', { searchExports: true });
+const FormSwitch = Webpack.getByStrings('htmlFor', 'asContainer', {searchExports:true});
 
 const settings = {
 	cssSizeFix: {
@@ -44,7 +44,7 @@ const changelog = {
             "title": "Changes",
             "type" : "improved",
             "items": [
-                `Tweaked CSS to not break video sizes when using the "Reduce attachments' sizes" option.`
+                `Fixed a broken filter which caused the settings menu to error.`
             ]
         }
     ]
