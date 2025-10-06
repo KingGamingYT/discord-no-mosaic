@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.2.2
+ * @version 1.2.3
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -12,7 +12,7 @@ const { createElement, useState } = React;
 const { closeModal } = Webpack.getMangled(/ConfirmModal:\(\)=>.{1,3}.ConfirmModal/, 
     { closeModal: Webpack.Filters.byStrings(".setState", ".getState()[")});
 const Button = Webpack.getModule(m => typeof m === "function" && typeof m.Link === "function", { searchExports: true });
-const FormSwitch = Webpack.getByStrings('htmlFor', 'asContainer', {searchExports:true});
+const FormSwitch = Webpack.getByStrings('"data-toggleable-component":"switch"', 'layout:"horizontal"', { searchExports: true });
 
 const settings = {
 	cssSizeFix: {
@@ -44,7 +44,7 @@ const changelog = {
             "title": "Changes",
             "type" : "improved",
             "items": [
-                `Fixed a broken filter which caused the settings menu to error.`
+                `Fixed a broken filter.`
             ]
         }
     ]
@@ -228,9 +228,9 @@ module.exports = class NoMosaic {
 	        const { name, note, changed } = settings[key];
 
             return createElement(FormSwitch, {
-	        	children: name,
-	        	note: note,
-	        	value: state,
+	        	label: name,
+	        	description: note,
+	        	checked: state,
 	        	onChange: (v) => {
 	        		Data.save('NoMosaic', key, v);
 	        		setState(v);
