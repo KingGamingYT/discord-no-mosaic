@@ -2,22 +2,26 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, NoSkillPureAndy
  * @description No more mosaic!
- * @version 1.2.3
+ * @version 1.2.4
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
 const { Data, Webpack, React, Patcher, Utils, DOM, UI } = BdApi;
 
 const { createElement, useState } = React;
-const { closeModal } = Webpack.getMangled(/ConfirmModal:\(\)=>.{1,3}.ConfirmModal/, 
-    { closeModal: Webpack.Filters.byStrings(".setState", ".getState()[")});
+const ModalSystem = Webpack.getMangled(".modalKey?", {
+    openModalLazy: Webpack.Filters.byStrings(".modalKey?"),
+    openModal: Webpack.Filters.byStrings(",instant:"),
+    closeModal: Webpack.Filters.byStrings(".onCloseCallback()"),
+    closeAllModals: Webpack.Filters.byStrings(".getState();for")
+});
 const Button = Webpack.getModule(m => typeof m === "function" && typeof m.Link === "function", { searchExports: true });
 const FormSwitch = Webpack.getByStrings('"data-toggleable-component":"switch"', 'layout:"horizontal"', { searchExports: true });
 
 const settings = {
 	cssSizeFix: {
 		name: "Reduce attachments' sizes",
-		note: "Makes attachments 400 pixels wide max like they were originally, rather than 550 pixels",
+		note: "Makes attachments 400 pixels wide & 300 pixels tall max like they were originally, rather than 550 pixels",
         default: true,
         changed: (v) => {
             if (v)
@@ -44,20 +48,22 @@ const changelog = {
             "title": "Changes",
             "type" : "improved",
             "items": [
-                `Fixed a broken filter.`
+                `Changed image heights to be properly accurate in the "Reduce attachments' sizes" option.`,
+                `Some general code cleanup.`
             ]
         }
     ]
 };
 
-let wrapperControlsHidden = structuredClone(BdApi.Webpack.getByKeys("wrapperControlsHidden"));
+let wrapperControlsHidden = structuredClone(Webpack.getByKeys("wrapperControlsHidden"));
 Object.keys(wrapperControlsHidden).forEach(function(key, index) {
     wrapperControlsHidden[key] = wrapperControlsHidden[key].replace(/ wrapper_[a-f0-9]{6}/,"");
 });
 const styles = Object.assign({},
-    BdApi.Webpack.getByKeys("visualMediaItemContainer"),
-    BdApi.Webpack.getByKeys("imageZoom"),
-    BdApi.Webpack.getByKeys("hoverButtonGroup"),
+    Webpack.getByKeys("visualMediaItemContainer"),
+    Webpack.getByKeys("imageZoom"),
+    Webpack.getByKeys("hoverButtonGroup"),
+    Webpack.getByKeys('imageWrapper', 'loadingOverlay'),
     wrapperControlsHidden
 );
 const shrinkImagesCSS = webpackify(
@@ -66,11 +72,17 @@ const shrinkImagesCSS = webpackify(
     max-width: 400px !important;
     width: auto;
 }
-.imageWrapper:has(>a) {
+.imageWrapper:has(>a):not(:has(.imagePlaceholder)) {
     width: auto !important;
 }
-.imageWrapper {
+.imageWrapper:not(:has(.imagePlaceholder)) {
     max-width: fit-content;
+    .loadingOverlay {
+        max-height: 300px;
+    }
+}
+.imageWrapper:has(.imagePlaceholder) {
+    max-width: 400px;
 }
 .oneByOneGrid {
     max-height: unset !important;
@@ -165,7 +177,7 @@ module.exports = class NoMosaic {
                 changes: changelog.changelog,
                 footer: createElement(Button, {
                     onClick: () => {
-                        closeModal(SCM);
+                        ModalSystem.closeModal(SCM);
                     },
                     children: "Okay",
                     style: { marginLeft: "auto" }
