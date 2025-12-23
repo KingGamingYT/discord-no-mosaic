@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, PurelyAndy
  * @description No more mosaic!
- * @version 1.2.4
+ * @version 1.2.5
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -48,8 +48,7 @@ const changelog = {
             "title": "Changes",
             "type" : "improved",
             "items": [
-                `Changed image heights to be properly accurate in the "Reduce attachments' sizes" option.`,
-                `Some general code cleanup.`
+                `Fixed CSS.`
             ]
         }
     ]
@@ -156,6 +155,7 @@ const metadataCSS = webpackify(
 `);
 function webpackify(css) {
     for (const key in styles) {
+        styles[key] = styles[key].split(' ', 1)[0];
         let regex = new RegExp(`\\.${key}([\\s,.):>])`, 'g');
         css = css.replace(regex, `.${styles[key]}$1`);
     }
@@ -260,4 +260,3 @@ module.exports = class NoMosaic {
         DOM.removeStyle('borderRadiusCSS', borderRadiusCSS);
     }
 };
-
