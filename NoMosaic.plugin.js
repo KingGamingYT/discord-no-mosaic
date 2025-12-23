@@ -1,6 +1,6 @@
 /**
  * @name NoMosaic
- * @author Tanza, KingGamingYT, NoSkillPureAndy
+ * @author Tanza, KingGamingYT, PurelyAndy
  * @description No more mosaic!
  * @version 1.2.4
  * @source https://github.com/KingGamingYT/discord-no-mosaic
@@ -260,3 +260,4 @@ module.exports = class NoMosaic {
         DOM.removeStyle('borderRadiusCSS', borderRadiusCSS);
     }
 };
+
