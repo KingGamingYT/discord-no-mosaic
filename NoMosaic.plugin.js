@@ -49,6 +49,7 @@ const changelog = {
             "type" : "improved",
             "items": [
                 `Fixed CSS.`
+				`Fixed compatibility with ImageUtilities.`
             ]
         }
     ]
@@ -63,6 +64,7 @@ const styles = Object.assign({},
     Webpack.getByKeys("imageZoom"),
     Webpack.getByKeys("hoverButtonGroup"),
     Webpack.getByKeys('imageWrapper', 'loadingOverlay'),
+    Webpack.getByKeys("mediaArea"),
     wrapperControlsHidden
 );
 const shrinkImagesCSS = webpackify(
@@ -74,7 +76,7 @@ const shrinkImagesCSS = webpackify(
 .imageWrapper:has(>a):not(:has(.imagePlaceholder)) {
     width: auto !important;
 }
-.imageWrapper:not(:has(.imagePlaceholder)) {
+:not(.mediaArea) > div > .imageWrapper:not(:has(.imagePlaceholder)) {
     max-width: fit-content;
     .loadingOverlay {
         max-height: 300px;
@@ -208,7 +210,7 @@ module.exports = class NoMosaic {
         };
 
 
-        Patcher.after('NoMosaic', Webpack.getModule(x=>x.ZP.minHeight).ZP.prototype,"componentDidMount", (instance,args,res) => {
+        Patcher.after('NoMosaic', Webpack.getModule(x=>x.ZP?.minHeight).ZP.prototype,"componentDidMount", (instance,args,res) => {
             let fileName = instance.props.fileName; 
             let fileSize = instance.props.fileSize;
 
