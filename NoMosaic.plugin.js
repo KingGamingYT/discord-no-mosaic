@@ -48,7 +48,7 @@ const changelog = {
             "title": "Changes",
             "type" : "improved",
             "items": [
-                `Fixed CSS.`
+                `Fixed CSS.`,
 				`Fixed compatibility with ImageUtilities.`
             ]
         }
