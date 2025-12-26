@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, PurelyAndy
  * @description No more mosaic!
- * @version 1.2.5
+ * @version 1.2.6
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
