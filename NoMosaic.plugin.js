@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, PurelyAndy
  * @description No more mosaic!
- * @version 1.2.7
+ * @version 1.2.8
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -48,24 +48,20 @@ const changelog = {
             "title": "Changes",
             "type" : "improved",
             "items": [
-                `Fixed CSS.`,
-				`Fixed compatibility with ImageUtilities.`
+                `Fixes to function again after Discord internal changes`
             ]
         }
     ]
 };
 
-let wrapperControlsHidden = structuredClone(Webpack.getByKeys("wrapperControlsHidden"));
-Object.keys(wrapperControlsHidden).forEach(function(key, index) {
-    wrapperControlsHidden[key] = wrapperControlsHidden[key].replace(/ wrapper_[a-f0-9]{6}/,"");
-});
+
 const styles = Object.assign({},
-    Webpack.getByKeys("visualMediaItemContainer"),
-    Webpack.getByKeys("imageZoom"),
-    Webpack.getByKeys("hoverButtonGroup"),
-    Webpack.getByKeys('imageWrapper', 'loadingOverlay'),
-    Webpack.getByKeys("mediaArea"),
-    wrapperControlsHidden
+    Object.getOwnPropertyDescriptors(Webpack.getByKeys("visualMediaItemContainer")),
+    Object.getOwnPropertyDescriptors(Webpack.getByKeys("imageZoom")),
+    Object.getOwnPropertyDescriptors(Webpack.getByKeys("hoverButtonGroup")),
+    Object.getOwnPropertyDescriptors(Webpack.getByKeys('imageWrapper', 'loadingOverlay')),
+    Object.getOwnPropertyDescriptors(Webpack.getByKeys("mediaArea")),
+    Object.getOwnPropertyDescriptors(Webpack.getByKeys("wrapperControlsHidden"))
 );
 const shrinkImagesCSS = webpackify(
 `
@@ -157,9 +153,9 @@ const metadataCSS = webpackify(
 `);
 function webpackify(css) {
     for (const key in styles) {
-        styles[key] = styles[key].split(' ', 1)[0];
+        styles[key].value = String(styles[key].value).split(' ', 1)[0];
         let regex = new RegExp(`\\.${key}([\\s,.):>])`, 'g');
-        css = css.replace(regex, `.${styles[key]}$1`);
+        css = css.replace(regex, `.${styles[key].value}$1`);
     }
     return css;
 } 
@@ -210,14 +206,13 @@ module.exports = class NoMosaic {
         };
 
 
-        Patcher.after('NoMosaic', Webpack.getModule(x=>x.ZP?.minHeight).ZP.prototype,"componentDidMount", (instance,args,res) => {
+        Patcher.after('NoMosaic', Webpack.getModule(x=>x.Ay?.minHeight).Ay.prototype,"componentDidMount", (instance,args,res) => {
             let fileName = instance.props.fileName; 
             let fileSize = instance.props.fileSize;
 
             const ref = Utils.findInTree(instance,x=>x?.mimeType,{walkable: ['props', 'children', '_owner', 'memoizedProps']})
             if (!ref?.mimeType?.includes('video'))
                 return;
-
             let playerInstance = instance.mediaRef.current;
             if (playerInstance.parentNode.querySelector(".metadata"))
                 return;
@@ -232,7 +227,7 @@ module.exports = class NoMosaic {
 
             playerInstance.parentNode.insertBefore(metadataContainer, playerInstance.nextSibling);
         });
-        Patcher.instead('NoMosaic', Webpack.getMangled("VISUAL_PLACEHOLDER", {isGroupableMedia: x=>x.toString?.().includes('==')}), "isGroupableMedia", () => {return false;});
+        Patcher.instead('NoMosaic', Webpack.getMangled('VISUAL_PLACEHOLDER"===', {isGroupableMedia: x=>x.toString().includes("VISUAL_PLACEHOLDER")}), "isGroupableMedia", () => {return false;});
         Patcher.after('NoMosaic', Webpack.getModule(x=>x?.prototype?.renderAttachments,{searchExports: true}).prototype, 'renderAttachments', renderAttachmentsPatch);
     }
 
