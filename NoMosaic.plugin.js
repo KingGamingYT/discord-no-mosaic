@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, PurelyAndy
  * @description No more mosaic!
- * @version 1.2.8
+ * @version 1.2.9
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -48,7 +48,7 @@ const changelog = {
             "title": "Changes",
             "type" : "improved",
             "items": [
-                `Fixes to function again after Discord internal changes`
+                `Fixed a small CSS error`
             ]
         }
     ]
@@ -78,7 +78,7 @@ const shrinkImagesCSS = webpackify(
         max-height: 300px;
     }
 }
-.imageWrapper:has(.imagePlaceholder) {
+.visualMediaItemContainer .imageWrapper:has(.imagePlaceholder) {
     max-width: 400px;
 }
 .oneByOneGrid {
