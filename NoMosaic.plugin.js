@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, PurelyAndy
  * @description No more mosaic!
- * @version 1.2.9
+ * @version 1.3.0
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -61,7 +61,8 @@ const styles = Object.assign({},
     Object.getOwnPropertyDescriptors(Webpack.getByKeys("hoverButtonGroup")),
     Object.getOwnPropertyDescriptors(Webpack.getByKeys('imageWrapper', 'loadingOverlay')),
     Object.getOwnPropertyDescriptors(Webpack.getByKeys("mediaArea")),
-    Object.getOwnPropertyDescriptors(Webpack.getByKeys("wrapperControlsHidden"))
+    Object.getOwnPropertyDescriptors(Webpack.getByKeys("wrapperControlsHidden")),
+    Object.getOwnPropertyDescriptors(Webpack.getByKeys("dimensionlessImage"))
 );
 const shrinkImagesCSS = webpackify(
 `
@@ -72,7 +73,7 @@ const shrinkImagesCSS = webpackify(
 .imageWrapper:has(>a):not(:has(.imagePlaceholder)) {
     width: auto !important;
 }
-:not(.mediaArea) > div > .imageWrapper:not(:has(.imagePlaceholder)) {
+:not(.mediaArea) > div > .imageWrapper:not(:has(.imagePlaceholder), .media) {
     max-width: fit-content;
     .loadingOverlay {
         max-height: 300px;
