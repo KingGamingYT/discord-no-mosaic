@@ -2,7 +2,8 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, PurelyAndy
  * @description No more mosaic!
- * @version 1.3.0
+ * @version 1.3.1
+ * @runAt idle
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
@@ -48,51 +49,76 @@ const changelog = {
             "title": "Changes",
             "type" : "improved",
             "items": [
-                `Fixed a small CSS error`
+                `The plugin works again. There may be small bugs introduced in this update due to an overhaul with how un-doing mosaics is handled. If you encounter any issues, please report them on Github!`
             ]
         }
     ]
 };
 
-
 const styles = Object.assign({},
-    Object.getOwnPropertyDescriptors(Webpack.getByKeys("visualMediaItemContainer")),
     Object.getOwnPropertyDescriptors(Webpack.getByKeys("imageZoom")),
-    Object.getOwnPropertyDescriptors(Webpack.getByKeys("hoverButtonGroup")),
     Object.getOwnPropertyDescriptors(Webpack.getByKeys('imageWrapper', 'loadingOverlay')),
     Object.getOwnPropertyDescriptors(Webpack.getByKeys("mediaArea")),
     Object.getOwnPropertyDescriptors(Webpack.getByKeys("wrapperControlsHidden")),
+    Object.getOwnPropertyDescriptors(Webpack.getByKeys("hoverButtonGroup") || {}),
+    Object.getOwnPropertyDescriptors(Webpack.getByKeys("visualMediaItemContainer") || {}),
     Object.getOwnPropertyDescriptors(Webpack.getByKeys("dimensionlessImage"))
 );
+
 const shrinkImagesCSS = webpackify(
 `
-.visualMediaItemContainer {
+.nonVisualMediaItemContainer:has(.imageWrapper) {
     max-width: 400px !important;
     width: auto;
 }
-.imageWrapper:has(>a):not(:has(.imagePlaceholder)) {
+.nonVisualMediaItemContainer .imageWrapper:has(>a):not(:has(.imagePlaceholderVisible)) {
     width: auto !important;
 }
-:not(.mediaArea) > div > .imageWrapper:not(:has(.imagePlaceholder), .media) {
-    max-width: fit-content;
+:not(.mediaArea) > div > .imageWrapper:not(.media) {   
     .loadingOverlay {
         max-height: 300px;
+        aspect-ratio: unset !important;
+        width: auto;
+        height: auto;
+        img {
+            max-width: 400px !important;
+            max-height: 300px;
+        }
+    }
+    .loadingOverlay:has(.imagePlaceholderVisible) {
+        height: 300px
     }
 }
-.visualMediaItemContainer .imageWrapper:has(.imagePlaceholder) {
+.nonVisualMediaItemContainer:has(.imageWrapper) .imageWrapper:has(.imagePlaceholder) {
     max-width: 400px;
 }
-.oneByOneGrid {
+.nonVisualMediaItem {
     max-height: unset !important;
 }
 `);
 
 const borderRadiusCSS = webpackify(
 `
-.oneByOneGridSingle,
 .imageDetailsAdded_sda9Fa .imageWrapper,
-.visualMediaItemContainer {
+.nonVisualMediaItemContainer {
     border-radius: 2px !important;
+}
+.nonVisualMediaItemContainer .imageWrapper:has(>a):not(:has(.imagePlaceholderVisible)) {
+    width: auto !important;
+}
+:not(.mediaArea) > div > .imageWrapper:not(.media) {   
+    .loadingOverlay {
+        width: auto;
+        height: auto;
+        aspect-ratio: unset !important;
+        img {
+            max-width: 550px !important;
+            max-height: 350px;
+        }
+    }
+    .loadingOverlay:has(.imagePlaceholderVisible) {
+        height: 350px;
+    }
 }
 `);
 
@@ -205,6 +231,14 @@ module.exports = class NoMosaic {
             }
             return ret;
         };
+
+        Patcher.before('NoMosaic', Webpack.getModule(Webpack.Filters.byDisplayName("Image"), {searchExports: true}), "render", (self, args, ret) => {
+            if (!args || !args[0] || args[0].alt === "GIF" || args[0].mediaLayoutType === "RESPONSIVE")
+                return;
+
+            args[0].useFullWidth = false;
+            args[0].src = args[0].src.substring(0, args[0].src.indexOf("&width"));
+        })
 
 
         Patcher.after('NoMosaic', Webpack.getModule(x=>x.Ay?.minHeight).Ay.prototype,"componentDidMount", (instance,args,res) => {
