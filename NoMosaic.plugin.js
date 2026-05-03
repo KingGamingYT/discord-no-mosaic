@@ -233,7 +233,7 @@ module.exports = class NoMosaic {
         };
 
         Patcher.before('NoMosaic', Webpack.getModule(Webpack.Filters.byDisplayName("Image"), {searchExports: true}), "render", (self, args, ret) => {
-            if (!args || !args[0] || args[0].alt === "GIF" || args[0].mediaLayoutType === "RESPONSIVE" || args[0].className.startsWith('media'))
+            if (!args || !args[0] || args[0].alt === "GIF" || args[0].mediaLayoutType === "RESPONSIVE" || args[0].className?.startsWith('media'))
                 return;
 
             args[0].useFullWidth = false;
