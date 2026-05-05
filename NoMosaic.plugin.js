@@ -2,14 +2,14 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, PurelyAndy
  * @description No more mosaic!
- * @version 1.3.1
+ * @version 1.3.2
  * @runAt idle
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
 
 const { Data, Webpack, React, Patcher, Utils, DOM, UI } = BdApi;
 
-const { createElement, useState } = React;
+const { createElement, useState, useMemo, Fragment } = React;
 const ModalSystem = Webpack.getMangled(".modalKey?", {
     openModalLazy: Webpack.Filters.byStrings(".modalKey?"),
     openModal: Webpack.Filters.byStrings(",instant:"),
@@ -18,6 +18,11 @@ const ModalSystem = Webpack.getMangled(".modalKey?", {
 });
 const Button = Webpack.getModule(m => typeof m === "function" && typeof m.Link === "function", { searchExports: true });
 const FormSwitch = Webpack.getByStrings('"data-toggleable-component":"switch"', 'layout:"horizontal"', { searchExports: true });
+const GridMosaicClasses = Webpack.getByKeys('oneByOneGrid');
+const wrapperCall = Webpack.getBySource(',"__wrapped__"))return', {searchExports: true});
+const combine = Webpack.getByStrings('.toString.toString().includes("[native code]")');
+const LaidOutItems = Webpack.getBySource('visualMediaItems', 'isSingleImage', {declarationFilter: Webpack.Filters.byStrings("itemsForLayout")});
+const LayoutRenderer = Webpack.getBySource('visualMediaItems', 'isSingleImage', {declarationFilter: Webpack.Filters.byStrings("isSingleMosaicItem")});
 
 const settings = {
 	cssSizeFix: {
@@ -49,7 +54,7 @@ const changelog = {
             "title": "Changes",
             "type" : "improved",
             "items": [
-                `The plugin works again. There may be small bugs introduced in this update due to an overhaul with how un-doing mosaics is handled. If you encounter any issues, please report them on Github!`
+                `Plugin should now be equivalent to how it was before discord's changes.`
             ]
         }
     ]
@@ -67,58 +72,33 @@ const styles = Object.assign({},
 
 const shrinkImagesCSS = webpackify(
 `
-.nonVisualMediaItemContainer:has(.imageWrapper) {
+.visualMediaItemContainer {
     max-width: 400px !important;
     width: auto;
 }
-.nonVisualMediaItemContainer .imageWrapper:has(>a):not(:has(.imagePlaceholderVisible)) {
+.imageWrapper:has(>a):not(:has(.imagePlaceholder)) {
     width: auto !important;
 }
-:not(.mediaArea) > div > .imageWrapper:not(.media) {   
+:not(.mediaArea) > div > .imageWrapper:not(:has(.imagePlaceholder), .media) {
+    max-width: fit-content;
     .loadingOverlay {
         max-height: 300px;
-        aspect-ratio: unset !important;
-        width: auto;
-        height: auto;
-        img {
-            max-width: 400px !important;
-            max-height: 300px;
-        }
-    }
-    .loadingOverlay:has(.imagePlaceholderVisible) {
-        height: 300px
     }
 }
-.nonVisualMediaItemContainer:has(.imageWrapper) .imageWrapper:has(.imagePlaceholder) {
+.visualMediaItemContainer .imageWrapper:has(.imagePlaceholder) {
     max-width: 400px;
 }
-.nonVisualMediaItem {
+.oneByOneGrid {
     max-height: unset !important;
 }
 `);
 
 const borderRadiusCSS = webpackify(
 `
+.oneByOneGridSingle,
 .imageDetailsAdded_sda9Fa .imageWrapper,
-.nonVisualMediaItemContainer {
+.visualMediaItemContainer {
     border-radius: 2px !important;
-}
-.nonVisualMediaItemContainer .imageWrapper:has(>a):not(:has(.imagePlaceholderVisible)) {
-    width: auto !important;
-}
-:not(.mediaArea) > div > .imageWrapper:not(.media) {   
-    .loadingOverlay {
-        width: auto;
-        height: auto;
-        aspect-ratio: unset !important;
-        img {
-            max-width: 550px !important;
-            max-height: 350px;
-        }
-    }
-    .loadingOverlay:has(.imagePlaceholderVisible) {
-        height: 350px;
-    }
 }
 `);
 
@@ -185,7 +165,46 @@ function webpackify(css) {
         css = css.replace(regex, `.${styles[key].value}$1`);
     }
     return css;
-} 
+}
+
+function GroupMedia({items, isInAppComponentsV2=false}) {
+    let mediaItems;
+    const isNonVisualMedia = (e) => "IMAGE" === e || "VIDEO" === e || "CLIP" === e || "VISUAL_PLACEHOLDER" === e;
+    const isGroupableMedia = (e) => "NOTHING" === e;
+    const {groupableVisualMediaItems, nonGroupableVisualMediaItems, nonVisualMediaItems} = (
+        mediaItems = items,
+        useMemo(() => {
+            let [item, nonVisualMediaItems] = wrapperCall.partition(mediaItems, x => isNonVisualMedia(x.item.type));
+            let [groupableVisualMediaItems, nonGroupableVisualMediaItems] = wrapperCall.partition(item, x => isGroupableMedia(x.item.type));
+            return {
+                groupableVisualMediaItems,
+                nonGroupableVisualMediaItems,
+                nonVisualMediaItems
+            }
+        }, [mediaItems])
+    )
+    const mediaWidth = isInAppComponentsV2 ? 600 : 550;
+    return (
+        createElement(Fragment, {}, [
+            groupableVisualMediaItems.length > 0 && createElement('div', { className: combine(GridMosaicClasses.visualMediaItemContainer, {
+                    [GridMosaicClasses.isInAppComponentsV2]: isInAppComponentsV2
+                })
+            }, createElement(LaidOutItems, {visualMediaItems: groupableVisualMediaItems, maxWidth: mediaWidth })),
+            nonGroupableVisualMediaItems.length > 0 && nonGroupableVisualMediaItems.map(x => {
+                const footer = x.renderGenericFileComponent({item: x.item, message: x.message});
+                return createElement('div', { className: combine(GridMosaicClasses.visualMediaItemContainer, {
+                        [GridMosaicClasses.isInAppComponentsV2]: isInAppComponentsV2
+                    })
+                }, createElement(LaidOutItems, {visualMediaItems: [x], maxWidth: mediaWidth }, x.item.uniqueId))
+            }),
+            nonVisualMediaItems.length > 0 && createElement('div', {className: GridMosaicClasses.nonVisualMediaItemContainer},
+                nonVisualMediaItems.map(x => createElement('div', {className: GridMosaicClasses.nonVisualMediaItem},
+                    createElement(LayoutRenderer, {props: x}, x.item.uniqueId)
+                ))
+            )
+        ])
+    )
+}
 module.exports = class NoMosaic {
     constructor(meta) {
         this.meta = meta;
@@ -232,14 +251,7 @@ module.exports = class NoMosaic {
             return ret;
         };
 
-        Patcher.before('NoMosaic', Webpack.getModule(Webpack.Filters.byDisplayName("Image"), {searchExports: true}), "render", (self, args, ret) => {
-            if (!args || !args[0] || args[0].alt === "GIF" || args[0].mediaLayoutType === "RESPONSIVE" || args[0].className?.startsWith('media'))
-                return;
-
-            args[0].useFullWidth = false;
-            args[0].src = args[0].src.substring(0, args[0].src.indexOf("&width"));
-        })
-
+        Patcher.instead('NoMosaic', Webpack.getBySource('visualMediaItems', 'isSingleImage'), "A", (that, [props]) => createElement(GroupMedia, {...props}))
 
         Patcher.after('NoMosaic', Webpack.getModule(x=>x.Ay?.minHeight).Ay.prototype,"componentDidMount", (instance,args,res) => {
             let fileName = instance.props.fileName; 
@@ -262,7 +274,6 @@ module.exports = class NoMosaic {
 
             playerInstance.parentNode.insertBefore(metadataContainer, playerInstance.nextSibling);
         });
-        Patcher.instead('NoMosaic', Webpack.getMangled('VISUAL_PLACEHOLDER"===', {isGroupableMedia: x=>x.toString().includes("VISUAL_PLACEHOLDER")}), "isGroupableMedia", () => {return false;});
         Patcher.after('NoMosaic', Webpack.getModule(x=>x?.prototype?.renderAttachments,{searchExports: true}).prototype, 'renderAttachments', renderAttachmentsPatch);
     }
 
