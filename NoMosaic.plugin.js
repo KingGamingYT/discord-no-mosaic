@@ -54,7 +54,8 @@ const changelog = {
             "title": "Changes",
             "type" : "improved",
             "items": [
-                `Plugin should now be equivalent to how it was before discord's changes.`
+                `Fixed a bug where .m4a audio files were affected by the video metadata option.`
+                `Fixed settings`
             ]
         }
     ]
