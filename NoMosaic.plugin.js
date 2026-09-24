@@ -17,9 +17,9 @@ const ModalSystem = Webpack.getMangled(".modalKey?", {
     closeAllModals: Webpack.Filters.byStrings(".getState();for")
 });
 const Button = Webpack.getModule(m => typeof m === "function" && typeof m.Link === "function", { searchExports: true });
-const FormSwitch = Webpack.getByStrings('"data-toggleable-component":"switch"', 'layout:"horizontal"', { searchExports: true });
+const FormSwitch = Webpack.getByStrings('hasIcon', 'switchIconsEnabled', {searchExports: true});
 const GridMosaicClasses = Webpack.getByKeys('oneByOneGrid');
-const wrapperCall = Webpack.getBySource(',"__wrapped__"))return', {searchExports: true});
+const lodash = Webpack.getByKeys('throttle');
 const combine = Webpack.getByStrings('.toString.toString().includes("[native code]")');
 const LaidOutItems = Webpack.getBySource('visualMediaItems', 'isSingleImage', {declarationFilter: Webpack.Filters.byStrings("itemsForLayout")});
 const LayoutRenderer = Webpack.getBySource('visualMediaItems', 'isSingleImage', {declarationFilter: Webpack.Filters.byStrings("isSingleMosaicItem")});
@@ -54,7 +54,7 @@ const changelog = {
             "title": "Changes",
             "type" : "improved",
             "items": [
-                `Fixed a bug where .m4a audio files were affected by the video metadata option.`
+                `Plugin should now be equivalent to how it was before discord's changes.`
             ]
         }
     ]
@@ -174,8 +174,8 @@ function GroupMedia({items, isInAppComponentsV2=false}) {
     const {groupableVisualMediaItems, nonGroupableVisualMediaItems, nonVisualMediaItems} = (
         mediaItems = items,
         useMemo(() => {
-            let [item, nonVisualMediaItems] = wrapperCall.partition(mediaItems, x => isNonVisualMedia(x.item.type));
-            let [groupableVisualMediaItems, nonGroupableVisualMediaItems] = wrapperCall.partition(item, x => isGroupableMedia(x.item.type));
+            let [item, nonVisualMediaItems] = lodash.partition(mediaItems, x => isNonVisualMedia(x.item.type));
+            let [groupableVisualMediaItems, nonGroupableVisualMediaItems] = lodash.partition(item, x => isGroupableMedia(x.item.type));
             return {
                 groupableVisualMediaItems,
                 nonGroupableVisualMediaItems,
@@ -213,7 +213,7 @@ module.exports = class NoMosaic {
         this.shouldDisplayChangelog = typeof pastVersion === "string" ? pastVersion !== this.meta.version : true;
         Data.save('NoMosaic', "version", this.meta.version);
     }
-    start() {
+    async start() {
         if (this.shouldDisplayChangelog) {
                 const SCM = UI.showChangelogModal({
                 title: this.meta.name + " Changelog",
@@ -251,7 +251,9 @@ module.exports = class NoMosaic {
             return ret;
         };
 
-        Patcher.instead('NoMosaic', Webpack.getBySource('visualMediaItems', 'isSingleImage'), "A", (that, [props]) => createElement(GroupMedia, {...props}))
+        await Webpack.waitForModule(Webpack.Filters.bySource('visualMediaItems', 'isSingleImage')).then((visualMediaItemRenderer) =>
+            Patcher.instead('NoMosaic', visualMediaItemRenderer, "A", (that, [props]) => createElement(GroupMedia, {...props})
+        ))
 
         Patcher.after('NoMosaic', Webpack.getModule(x=>x.Ay?.minHeight).Ay.prototype,"componentDidMount", (instance,args,res) => {
             let fileName = instance.props.fileName; 
