@@ -54,7 +54,7 @@ const changelog = {
             "title": "Changes",
             "type" : "improved",
             "items": [
-                `Fixed a bug where .m4a audio files were affected by the video metadata option.`
+                `Fixed a bug where .m4a audio files were affected by the video metadata option.`,
                 `Fixed settings`
             ]
         }
