@@ -2,7 +2,7 @@
  * @name NoMosaic
  * @author Tanza, KingGamingYT, PurelyAndy
  * @description No more mosaic!
- * @version 1.3.2
+ * @version 1.3.3
  * @runAt idle
  * @source https://github.com/KingGamingYT/discord-no-mosaic
  */
@@ -54,7 +54,7 @@ const changelog = {
             "title": "Changes",
             "type" : "improved",
             "items": [
-                `Plugin should now be equivalent to how it was before discord's changes.`
+                `Fixed a bug where .m4a audio files were affected by the video metadata option.`
             ]
         }
     ]
@@ -258,7 +258,7 @@ module.exports = class NoMosaic {
             let fileSize = instance.props.fileSize;
 
             const ref = Utils.findInTree(instance,x=>x?.mimeType,{walkable: ['props', 'children', '_owner', 'memoizedProps']})
-            if (!ref?.mimeType?.includes('video'))
+            if (!ref?.mimeType?.includes('video') || fileName.endsWith('.m4a'))
                 return;
             let playerInstance = instance.mediaRef.current;
             if (playerInstance.parentNode.querySelector(".metadata"))
